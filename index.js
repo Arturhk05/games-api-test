@@ -3,6 +3,10 @@ const app = express()
 const bodyParser = require("body-parser")
 const connection = require("../Plataforma de perguntas/database/database")
 const Game = require("./database/Game")
+const cors = require("cors")
+
+// Cors
+app.use(cors())
 
 // Body parser
 app.use(bodyParser.urlencoded({extended: false}))
