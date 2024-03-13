@@ -39,10 +39,8 @@ var DB = {
 
 // Find all games
 app.get("/games", auth, (req, res) => {
-  
-
   Game.findAll().then((games) => {
-    res.json({user: req.loggedUser, games: games})
+    res.json(games)
     res.statusCode = 200
   })
 })
