@@ -38,15 +38,17 @@ var DB = {
 }
 
 // Find all games
-app.get("/games", (req, res) => {
+app.get("/games", auth, (req, res) => {
+  
+
   Game.findAll().then((games) => {
-    res.json(games)
+    res.json({user: req.loggedUser, games: games})
     res.statusCode = 200
   })
 })
 
 // Find one by id
-app.get("/game/:id", (req, res) => {
+app.get("/game/:id", auth, (req, res) => {
   if (!isNaN(req.params.id)) {
     const id = parseInt(req.params.id)
     Game.findOne({where: {id: id}})
@@ -67,7 +69,7 @@ app.get("/game/:id", (req, res) => {
 })
 
 // New game
-app.post("/game", (req, res) => {
+app.post("/game", auth, (req, res) => {
   const {title, price, year} = req.body
 
   Game.create({
@@ -82,7 +84,7 @@ app.post("/game", (req, res) => {
 })
 
 // Delete game by id
-app.delete("/game/:id", (req, res) => {
+app.delete("/game/:id", auth, (req, res) => {
   if (!isNaN(req.params.id)) {
     const id = parseInt(req.params.id)
     Game.destroy({where: {id: id}})
@@ -98,7 +100,7 @@ app.delete("/game/:id", (req, res) => {
 })
 
 // Update game by id
-app.put("/game/:id", (req, res) => {
+app.put("/game/:id", auth, (req, res) => {
   if (!isNaN(req.params.id)) {
     const id = parseInt(req.params.id)
     const {title, year, price} = req.body
@@ -157,6 +159,28 @@ app.post("/auth", (req, res) => {
     res.sendStatus(400)
   }
 })
+
+function auth(req, res, next) {
+  const authToken = req.headers['authorization']
+
+  if (authToken) {
+    const bearer = authToken.split(' ')
+    const token = bearer[1]
+
+    jwt.verify(token, secret, (err, data) => {
+      if (err) {
+        res.sendStatus(401)
+      } else {
+        res.status(200)
+        req.token = token
+        req.loggedUser = [{id: data.id, email: data.email}]
+        next()
+      }
+    })
+  } else {
+    res.sendStatus(401)
+  }
+}
 
 app.listen(3000, () => {
   console.log("Servidor rodando")
