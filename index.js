@@ -39,8 +39,27 @@ var DB = {
 
 // Find all games
 app.get("/games", auth, (req, res) => {
+
+  const HATEOAS = [
+    {
+      href: "http://localhost:3000/game/:id",
+      method: "DELETE",
+      rel: "delete_game"
+    },
+    {
+      href: "http://localhost:3000/game/:id",
+      method: "GET",
+      rel: "get_game"
+    },
+    {
+      href: "http://localhost:3000/auth",
+      method: "POST",
+      rel: "login"
+    }
+  ]
+
   Game.findAll().then((games) => {
-    res.json(games)
+    res.json({games, _links: HATEOAS})
     res.statusCode = 200
   })
 })
@@ -52,7 +71,31 @@ app.get("/game/:id", auth, (req, res) => {
     Game.findOne({where: {id: id}})
     .then(game => {
       if (game) {
-        res.json(game)
+
+        const HATEOAS = [
+          {
+            href: "http://localhost:3000/game/"+id,
+            method: "DELETE",
+            rel: "delete_game"
+          },
+          {
+            href: "http://localhost:3000/game/"+id,
+            method: "GET",
+            rel: "get_game"
+          },
+          {
+            href: "http://localhost:3000/game/"+id,
+            method: "PUT",
+            rel: "get_game"
+          },
+          {
+            href: "http://localhost:3000/games",
+            method: "POST",
+            rel: "get_all_games"
+          }
+        ]
+
+        res.json({game,  _links: HATEOAS})
         res.statusCode = 200
       } else {
         res.sendStatus(404)
